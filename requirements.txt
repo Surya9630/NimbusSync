@@ -1,0 +1,9 @@
+sqlalchemy
+psycopg2-binary
+python-dotenv
+python-amazon-sp-api==0.8.0
+gspread
+oauth2client
+apscheduler
+pandas
+openpyxl

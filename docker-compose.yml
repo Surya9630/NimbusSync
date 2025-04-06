@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  gorilla_app:
+    build: .
+    container_name: gorilla_app
+    volumes:
+      - .:/app
+    environment:
+      - DB_HOST=gorilla_db
+    depends_on:
+      - gorilla_db
+    networks:
+      - gorilla-net
+
+  gorilla_db:
+    image: postgres:13
+    container_name: gorilla_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: gorilla
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - gorilla-net
+
+  airflow_db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - airflow_db:/var/lib/postgresql/data
+    networks:
+      - gorilla-net
+
+  airflow_webserver:
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
+    container_name: airflow_webserver
+    depends_on:
+      - airflow_db
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@airflow_db/airflow
+      - AIRFLOW__CORE__FERNET_KEY=eui5X-EOIQPk4veTTcEgoQ3bM9qz60wABcZq-sCCVOQ=
+      - AIRFLOW__WEBSERVER__SECRET_KEY=my_super_secret_webserver_key
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+    ports:
+      - "8080:8080"
+    command: webserver
+    networks:
+      - gorilla-net
+
+  airflow_scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
+    container_name: airflow_scheduler
+    depends_on:
+      - airflow_webserver
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@airflow_db/airflow
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+    command: scheduler
+    networks:
+      - gorilla-net
+
+volumes:
+  pgdata:
+  airflow_db:
+
+networks:
+  gorilla-net:
