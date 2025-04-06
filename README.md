@@ -84,7 +84,7 @@ NimbusSync/
 
 Made with ❤️ by **Surya**
 
-[GitHub](https://github.com/Surya9630) | [LinkedIn](https://www.linkedin.com/in/surya9630)
+[GitHub](https://github.com/Surya9630) | [LinkedIn](https://www.linkedin.com/in/surya-chauhan-933938218/)
 
 ---
 
